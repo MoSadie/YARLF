@@ -1,0 +1,50 @@
+plugins {
+    id "java-library"
+    id "jaci.openrio.gradle.GradleRIO" version "2018.03.06"
+    id 'maven'
+}
+
+deploy {
+    for (String task : project.gradle.startParameter.taskNames) {
+        if (task == "deploy")
+            throw new GradleException("This is a library project! You can't deploy it to a robot!")
+    }
+}
+
+repositories {
+	maven { url 'https://jitpack.io' }
+    mavenCentral()
+}
+
+// Defining my dependencies. In this case, WPILib (+ friends), CTRE Phoenix (Talon SRX),
+// NavX and RobotLib.
+dependencies {
+    compileOnly wpilib()
+    compileOnly ctre()
+    compileOnly navx()
+	compileOnly 'com.github.ORF-4450:RobotLib:v2.0'
+    implementation 'org.reflections:reflections:0.9.11'
+}
+
+// Define javadoc setup.
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+// Create Sources Jar
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// Create Javadoc Jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// Additional artifacts to publish for JitPack
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
