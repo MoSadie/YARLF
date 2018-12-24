@@ -1,4 +1,4 @@
-package io.github.mosadie.yarlf;
+package io.github.mosadie.yarls;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -8,6 +8,11 @@ import java.io.IOException;
  * Represents the log files for a given object.
  * The object itself is used mainly as a 'key' to look up this ObjectLog at a later time,
  * and to find the log files on the file system.
+ * 
+ * To create your own ObjectLog designed for your object, extend this class
+ * and override the methods makeLogFolder(), getObject(), getType(), logCurrentStatus(LOG_LEVEL logLevel)
+ * as well as the constructor to match what you need.
+ * See docs for more info.
  */
 public class ObjectLog {
     /**
@@ -46,7 +51,7 @@ public class ObjectLog {
      * Create the log folder for this object, if it doesn't exist already.
      */
     protected void makeLogFolder() {
-        this.logFolder = new File(YARLF.getInstance().logDirPath + objectToLog.toString() + "/");
+        this.logFolder = new File(YARLS.getInstance().logDirPath + objectToLog.toString() + "/");
         logFolder.mkdir();
     }
     
@@ -75,22 +80,37 @@ public class ObjectLog {
             infoLog = new File(logFolder, "info.txt");
             infoLog.createNewFile();
         } catch (IOException e) {
-            YARLF.getInstance().logException(e);
+            YARLS.getInstance().logException(e);
         }
         
         try {
             warnLog = new File(logFolder, "warn.txt");
             warnLog.createNewFile();
         } catch (IOException e) {
-            YARLF.getInstance().logException(e);
+            YARLS.getInstance().logException(e);
         }
         
         try {
             errorLog = new File(logFolder, "error.txt");
             errorLog.createNewFile();
         } catch (IOException e) {
-            YARLF.getInstance().logException(e);
+            YARLS.getInstance().logException(e);
         }
+    }
+
+    /**
+     * Log the current status to the INFO log.
+     */
+    public void logCurrentStatus() {
+        logCurrentStatus(LOG_LEVEL.INFO);
+    }
+
+    /**
+     * Log the current status to the log level of your choosing.
+     * @param logLevel The level of logging to use when logging the current status.
+     */
+    public void logCurrentStatus(LOG_LEVEL logLevel) {
+        log(logLevel, getObject().toString());
     }
     
     /**
@@ -99,14 +119,14 @@ public class ObjectLog {
      * WARN - Things users should care about, but doesn't crash the program or cause major issues.
      * ERROR - The user needs to be able to get this information on it's own w/o looking through large files.
      */
-    enum LOG_LEVEL {INFO, WARN, ERROR};
+    public enum LOG_LEVEL {INFO, WARN, ERROR};
 
     /**
      * Log a message to a log file.
      * @param logLevel The level of log file to write to.
      * @param message The message to write to the log file.
      */
-    private void log(LOG_LEVEL logLevel, String message) {
+    protected void log(LOG_LEVEL logLevel, String message) {
         File logFile;
         switch(logLevel) {
             case INFO:
@@ -129,7 +149,7 @@ public class ObjectLog {
         try(FileWriter fileWriter = new FileWriter(logFile)) {
             fileWriter.write(getPrefix() + message + "\n");
         } catch (IOException e) {
-            YARLF.getInstance().logException(e);
+            YARLS.getInstance().logException(e);
         }
     }
 
@@ -159,14 +179,15 @@ public class ObjectLog {
     
     /**
      * Get the prefix for every entry in the log file.
-     * It's in the form '[h:m:s] ' where:
-     * h = Hours since YARLF was constructed.
-     * m = Minutes since YARLF was constructed.
-     * s = Seconds since YARLF was constructed.
+     * It's in the form '[h:m:s:ms] ' where:
+     * h = Hours since YARLS was constructed.
+     * m = Minutes since YARLS was constructed, that weren't accounted for in hours.
+     * s = Seconds since YARLS was constructed, that weren't accounted for in minutes.
+     * ms = Millaseconds since YARLS was constructed, that weren't accounted for in seconds.
      * @return The prefix used in front of each entry in the log file.
      */
     protected String getPrefix() {
-        long[] timeSinceStart = YARLF.getInstance().getTimeSinceStart();
+        long[] timeSinceStart = YARLS.getInstance().getTimeSinceStart();
         return "[" + timeSinceStart[0] + ":" + timeSinceStart[1] + ":" + timeSinceStart[2] + "] ";
     }
 }

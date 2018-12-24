@@ -1,30 +1,30 @@
-package io.github.mosadie.yarlf;
+package io.github.mosadie.yarls;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class YARLFLog extends ObjectLog {
+public class YARLSLog extends ObjectLog {
     protected File exceptionLog;
 
-    public YARLFLog(YARLF yarlf) {
+    public YARLSLog(YARLS yarlf) {
         super(yarlf);
     }
 
     @Override
     protected void makeLogFolder() {
-        this.logFolder = new File(((YARLF)getObject()).getLogDirPath() + "YARLF/");
+        this.logFolder = new File(getObject().getLogDirPath() + "YARLF/");
         logFolder.mkdir();
     }
 
     @Override
-    public YARLF getObject() {
-        return (YARLF)super.getObject();
+    public YARLS getObject() {
+        return (YARLS)super.getObject();
     }
 
     public static Class<?> getType() {
-        return YARLF.class;
+        return YARLS.class;
     }
 
     @Override
